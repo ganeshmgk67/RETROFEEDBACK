@@ -1849,13 +1849,175 @@
         }
 
         function exportRoomData() {
-            const room = DB.rooms[currentRoom];
-            const feedbacks = DB.feedback[currentRoom] || [];
+    const room = DB.rooms[currentRoom];
+    const feedbacks = DB.feedback[currentRoom] || [];
 
-            if (!room) {
-                showMessage('Room not found!', 'error');
-                return;
-            }
+    if (!room) {
+        showMessage('Room not found!', 'error');
+        return;
+    }
+
+    // Calculate statistics
+    const totalFeedback = feedbacks.length;
+    const averageRating = totalFeedback > 0 ? (feedbacks.reduce((a, b) => a + b.rating, 0) / totalFeedback).toFixed(1) : 0;
+    const highestRating = totalFeedback > 0 ? Math.max(...feedbacks.map(f => f.rating)) : 0;
+    const lowestRating = totalFeedback > 0 ? Math.min(...feedbacks.map(f => f.rating)) : 0;
+
+    // Create HTML for PDF with print-friendly colors
+    const htmlContent = `
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, sans-serif; margin: 20px; color: #000; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px; }
+            .header h1 { color: #000; margin: 0; font-size: 28px; }
+            .header p { margin: 5px 0; color: #333; font-size: 14px; }
+            .stats-section { margin: 30px 0; background: #f5f5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #000; }
+            .stats-section h2 { color: #000; margin-top: 0; font-size: 18px; }
+            .stat-row { display: inline-block; width: 48%; margin: 10px 1%; padding: 10px; background: #fff; border-radius: 5px; border: 1px solid #ddd; }
+            .stat-label { font-weight: bold; color: #333; font-size: 13px; }
+            .stat-value { color: #000; font-size: 22px; font-weight: bold; margin-top: 8px; }
+            .feedback-section { margin: 30px 0; }
+            .feedback-section h2 { color: #000; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            table th { background: #333; color: white; padding: 12px; text-align: left; font-weight: bold; border: 1px solid #000; }
+            table td { padding: 12px; border: 1px solid #ddd; background: #fff; color: #000; }
+            table tr:nth-child(even) { background: #f9f9f9; }
+            .rating { text-align: center; color: #000; font-weight: bold; }
+            .footer { margin-top: 40px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px; }
+            .page-break { page-break-after: always; margin-top: 50px; }
+            h3 { color: #000; margin-top: 15px; margin-bottom: 10px; }
+            .rating-distribution { margin: 20px 0; }
+            .distribution-item { display: flex; align-items: center; margin: 10px 0; }
+            .dist-label { width: 50px; font-weight: bold; color: #000; }
+            .dist-bar { flex-grow: 1; height: 25px; background: linear-gradient(90deg, #ccc, #999); margin: 0 10px; border: 1px solid #666; }
+            .dist-count { width: 40px; text-align: right; font-weight: bold; color: #000; }
+        </style>
+
+        <div class="header">
+            <h1>EVENT FEEDBACK REPORT</h1>
+            <p><strong>Event:</strong> ${room.eventName}</p>
+            <p><strong>Organizer:</strong> ${room.organizer}</p>
+            <p><strong>Event Date:</strong> ${room.eventDate}</p>
+            <p><strong>Room Code:</strong> ${room.roomCode}</p>
+        </div>
+
+        <div class="stats-section">
+            <h2>FEEDBACK STATISTICS</h2>
+            <div class="stat-row">
+                <div class="stat-label">Total Feedback Responses:</div>
+                <div class="stat-value">${totalFeedback}</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Average Rating:</div>
+                <div class="stat-value">${averageRating} ★</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Highest Rating:</div>
+                <div class="stat-value">${highestRating} ${generateStars(highestRating)}</div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Lowest Rating:</div>
+                <div class="stat-value">${lowestRating} ${generateStars(lowestRating)}</div>
+            </div>
+        </div>
+
+        ${feedbacks.length > 0 ? `
+        <div class="feedback-section">
+            <h2>RATING DISTRIBUTION</h2>
+            <div class="rating-distribution">
+                ${generateRatingDistributionHTML(feedbacks)}
+            </div>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="feedback-section">
+            <h2>DETAILED FEEDBACK RESPONSES</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User Name</th>
+                        <th>Rating</th>
+                        <th>Category</th>
+                        <th>Feedback Comment</th>
+                        <th>Submitted At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${feedbacks.map((fb, index) => `
+                        <tr>
+                            <td>${fb.user}</td>
+                            <td class="rating">${fb.rating}/5 ${generateStars(fb.rating)}</td>
+                            <td>${fb.category}</td>
+                            <td>${escapeHtml(fb.comment)}</td>
+                            <td>${fb.timestamp}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        ` : `
+        <div class="feedback-section">
+            <p style="text-align: center; color: #999; padding: 40px 0; font-size: 16px;">No feedback responses yet.</p>
+        </div>
+        `}
+
+        <div class="footer">
+            <p>Report Generated: ${getCurrentTimestamp()}</p>
+            <p>RetroFeedback Event Management System © 2026</p>
+        </div>
+    `;
+
+    // Create element for PDF
+    const element = document.createElement('div');
+    element.innerHTML = htmlContent;
+
+    const opt = {
+        margin: 10,
+        filename: `feedback_${room.roomCode}_${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, logging: false, useCORS: true },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    
+    showMessage('PDF Report exported successfully!', 'success');
+}
+
+// Helper function to escape HTML characters
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// Helper function to generate rating distribution HTML
+function generateRatingDistributionHTML(feedbacks) {
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    feedbacks.forEach(f => distribution[f.rating]++);
+
+    let html = '';
+    for (let i = 5; i >= 1; i--) {
+        const count = distribution[i];
+        const maxCount = Math.max(...Object.values(distribution));
+        const percentage = maxCount > 0 ? (count / maxCount * 100) : 0;
+
+        html += `
+            <div class="distribution-item">
+                <div class="dist-label">${i} ★</div>
+                <div class="dist-bar" style="width: ${percentage}%;"></div>
+                <div class="dist-count">${count}</div>
+            </div>
+        `;
+    }
+    return html;
+}
 
             // Calculate statistics
             const totalFeedback = feedbacks.length;
