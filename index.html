@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Feedback System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(45deg, #FF00FF, #00FFFF, #FFFF00, #FF00FF);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 10px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 8px solid #00FFFF;
+            box-shadow: 0 0 20px #00FFFF, inset 0 0 20px rgba(0, 255, 255, 0.3);
+            padding: 40px;
+            border-radius: 10px;
+            color: #00FF00;
+            text-shadow: 0 0 10px #00FF00;
+            min-height: 500px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1, h2, h3 {
+            color: #FFFF00;
+            text-shadow: 0 0 10px #FFFF00, 0 0 20px #FF00FF;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        h2 {
+            font-size: 2em;
+        }
+
+        h3 {
+            font-size: 1.5em;
+        }
+
+        input, textarea, select {
+            background: #1a1a1a;
+            border: 3px solid #00FF00;
+            color: #00FF00;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            margin: 10px 0;
+            width: 100%;
+            text-shadow: 0 0 5px #00FF00;
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
+            border-radius: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #FFFF00;
+            box-shadow: inset 0 0 10px rgba(255, 255, 0, 0.3), 0 0 15px #FFFF00;
+        }
+
+        textarea {
+            resize: vertical;
+            max-width: 100%;
+        }
+
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300FF00' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 1.5em;
+            padding-right: 2.5em;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00FFFF;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00FFFF;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
+            border: 4px solid #FFFF00;
+            color: #000;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 15px #FF00FF, 0 5px 0 #FFFF00;
+            position: relative;
+            top: 0;
+            border-radius: 4px;
+            display: inline-block;
+            min-height: 44px;
+            line-height: 1.2;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .btn:hover {
+            top: -3px;
+            box-shadow: 0 0 25px #FF00FF, 0 8px 0 #FFFF00;
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            top: 3px;
+            box-shadow: 0 0 15px #FF00FF, 0 2px 0 #FFFF00;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #00FF00, #00FFFF);
+            border-color: #FF00FF;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #FF0000, #FF0066);
+            border-color: #FFFF00;
+        }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            margin: 5px;
+            min-height: 40px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .button-group.center {
+            justify-content: center;
+        }
+
+        .button-group.column {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .button-group.column .btn {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .welcome-box {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .welcome-box h1 {
+            font-size: 3em;
+            margin: 20px 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { text-shadow: 0 0 10px #FFFF00, 0 0 20px #FF00FF; }
+            50% { text-shadow: 0 0 20px #FFFF00, 0 0 40px #FF00FF, 0 0 60px #00FFFF; }
+        }
+
+        .welcome-box p {
+            font-size: 1.2em;
+            color: #00FFFF;
+            margin: 15px 0;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+
+        .room-code {
+            background: #1a1a1a;
+            border: 4px solid #FFFF00;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 20px #FFFF00;
+        }
+
+        .room-code h3 {
+            color: #00FFFF;
+            margin-bottom: 10px;
+        }
+
+        .room-code-display {
+            font-size: 2.5em;
+            color: #FFFF00;
+            font-weight: bold;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #FFFF00;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            background: #00FF00;
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #00FFFF;
+            box-shadow: 0 0 15px #00FFFF;
+        }
+
+        .feedback-card {
+            background: #1a1a1a;
+            border: 3px solid #FF00FF;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .feedback-card h4 {
+            color: #00FFFF;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+
+        .rating-display {
+            font-size: 1.5em;
+            color: #FFFF00;
+            text-shadow: 0 0 5px #FFFF00;
+            margin: 8px 0;
+        }
+
+        .stars {
+            font-size: 1.5em;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        .star {
+            color: #444;
+            transition: all 0.2s ease;
+            margin: 0 5px;
+            display: inline-block;
+        }
+
+        .star.active {
+            color: #FFFF00;
+            text-shadow: 0 0 10px #FFFF00;
+        }
+
+        .star:hover {
+            color: #FFFF00;
+            text-shadow: 0 0 10px #FFFF00;
+            transform: scale(1.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 3px solid #00FFFF;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .stat-card h4 {
+            color: #FFFF00;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #FFFF00;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #00FF00;
+            text-shadow: 0 0 10px #00FF00;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #00FFFF;
+            font-size: 0.9em;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+
+        .user-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00FFFF;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info .username {
+            color: #FFFF00;
+            font-weight: bold;
+            text-shadow: 0 0 5px #FFFF00;
+        }
+
+        .logout-btn {
+            background: #FF0000;
+            border-color: #FFFF00;
+            padding: 8px 15px;
+            font-size: 0.9em;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 0, 0.3);
+            border: 2px solid #00FF00;
+            color: #00FF00;
+            text-shadow: 0 0 5px #00FF00;
+        }
+
+        .message.error {
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #FF0000;
+            color: #FF0000;
+            text-shadow: 0 0 5px #FF0000;
+        }
+
+        .message.info {
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid #00FFFF;
+            color: #00FFFF;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+
+        .back-btn {
+            background: #00FF00;
+            border-color: #FF00FF;
+            padding: 10px 20px;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            border: 2px solid #00FFFF;
+            padding: 12px;
+            text-align: left;
+            background: #1a1a1a;
+            word-break: break-word;
+        }
+
+        table th {
+            background: #0a0a0a;
+            color: #FFFF00;
+            text-shadow: 0 0 5px #FFFF00;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        table tr:hover {
+            background: #2a2a2a;
+            box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .edit-btn, .delete-btn, .view-btn {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            border: 1px solid #FFFF00;
+            flex: 1;
+            min-width: 60px;
+        }
+
+        .edit-btn {
+            background: #00FFFF;
+            color: #000;
+        }
+
+        .delete-btn {
+            background: #FF0000;
+            color: #fff;
+        }
+
+        .view-btn {
+            background: #00FF00;
+            color: #000;
+        }
+
+        .chart {
+            background: #1a1a1a;
+            border: 3px solid #FF00FF;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .chart h4 {
+            color: #00FFFF;
+            margin-bottom: 15px;
+            text-shadow: 0 0 5px #00FFFF;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .chart-label {
+            color: #FFFF00;
+            width: 100px;
+            font-weight: bold;
+        }
+
+        .chart-fill {
+            flex-grow: 1;
+            background: linear-gradient(90deg, #FF00FF, #00FFFF);
+            height: 30px;
+            border: 2px solid #00FF00;
+            position: relative;
+            margin: 0 10px;
+        }
+
+        .chart-value {
+            color: #00FF00;
+            margin-left: 10px;
+            font-weight: bold;
+            min-width: 50px;
+        }
+
+        .scroll-table {
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 3px solid #00FFFF;
+            border-radius: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .scroll-table::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        .scroll-table::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .scroll-table::-webkit-scrollbar-thumb {
+            background: #FF00FF;
+            border-radius: 5px;
+        }
+
+        .scroll-table::-webkit-scrollbar-thumb:hover {
+            background: #00FFFF;
+        }
+
+        /* Firefox Scrollbar */
+        .scroll-table {
+            scrollbar-color: #FF00FF #0a0a0a;
+            scrollbar-width: thin;
+        }
+
+        /* ========== RESPONSIVE DESIGN ========== */
+
+        /* Tablets and Small Desktops (768px and below) */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 25px;
+                border: 6px solid #00FFFF;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 2em;
+                letter-spacing: 2px;
+            }
+
+            h2 {
+                font-size: 1.6em;
+                letter-spacing: 2px;
+            }
+
+            h3 {
+                font-size: 1.3em;
+            }
+
+            .welcome-box h1 {
+                font-size: 2em;
+            }
+
+            .welcome-box p {
+                font-size: 1.1em;
+            }
+
+            input, textarea, select {
+                padding: 10px;
+                font-size: 1em;
+            }
+
+            .form-group label {
+                font-size: 1em;
+            }
+
+            .btn {
+                padding: 12px 25px;
+                font-size: 1em;
+                letter-spacing: 1px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .button-group.center {
+                align-items: stretch;
+            }
+
+            .button-group .btn {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 1.8em;
+            }
+
+            .room-code-display {
+                font-size: 2em;
+                letter-spacing: 3px;
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .user-info .username {
+                width: 100%;
+            }
+
+            .logout-btn {
+                width: 100%;
+            }
+
+            table th, table td {
+                padding: 10px;
+                font-size: 0.95em;
+            }
+
+            .chart-bar {
+                flex-direction: row;
+            }
+
+            .chart-label {
+                width: 80px;
+                font-size: 0.95em;
+            }
+
+            .feedback-card {
+                padding: 15px;
+                margin: 10px 0;
+            }
+
+            .scroll-table {
+                max-height: 500px;
+            }
+        }
+
+        /* Mobile Phones (480px and below) */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+                padding: 15px;
+                border: 3px solid #00FFFF;
+                border-radius: 5px;
+                min-height: auto;
+            }
+
+            h1 {
+                font-size: 1.6em;
+                letter-spacing: 1.5px;
+                margin-bottom: 15px;
+            }
+
+            h2 {
+                font-size: 1.3em;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+            }
+
+            h3 {
+                font-size: 1.1em;
+                margin-bottom: 8px;
+            }
+
+            h4 {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            .welcome-box {
+                margin: 20px 0;
+            }
+
+            .welcome-box h1 {
+                font-size: 1.6em;
+                margin: 15px 0;
+            }
+
+            .welcome-box p {
+                font-size: 0.95em;
+                margin: 8px 0;
+            }
+
+            input, textarea, select {
+                padding: 10px;
+                font-size: 16px;
+                border: 2px solid #00FF00;
+                margin: 8px 0;
+            }
+
+            input:focus, textarea:focus, select:focus {
+                border-color: #FFFF00;
+            }
+
+            .form-group {
+                margin: 12px 0;
+            }
+
+            .form-group label {
+                font-size: 0.95em;
+                margin-bottom: 6px;
+            }
+
+            .btn {
+                padding: 12px 15px;
+                font-size: 0.95em;
+                letter-spacing: 1px;
+                margin: 6px 3px;
+                border: 3px solid #FFFF00;
+                box-shadow: 0 0 10px #FF00FF, 0 3px 0 #FFFF00;
+            }
+
+            .btn:hover {
+                top: -2px;
+                box-shadow: 0 0 15px #FF00FF, 0 5px 0 #FFFF00;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 6px;
+                margin: 12px 0;
+            }
+
+            .button-group.center {
+                align-items: stretch;
+            }
+
+            .button-group .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 12px;
+                border: 2px solid #00FFFF;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
+                margin: 8px 0;
+            }
+
+            .stat-label {
+                font-size: 0.85em;
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 10px;
+                border: 2px solid #00FFFF;
+                margin: 8px 0;
+            }
+
+            .user-info .username {
+                width: 100%;
+                font-size: 0.95em;
+            }
+
+            .logout-btn {
+                width: 100%;
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+
+            .room-code {
+                padding: 15px;
+                margin: 15px 0;
+                border: 3px solid #FFFF00;
+            }
+
+            .room-code h3 {
+                font-size: 1em;
+                margin-bottom: 8px;
+            }
+
+            .room-code-display {
+                font-size: 1.6em;
+                letter-spacing: 3px;
+                margin: 10px 0;
+            }
+
+            .copy-btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+                margin-top: 8px;
+            }
+
+            .back-btn {
+                width: 100%;
+                padding: 10px 12px;
+                font-size: 0.9em;
+                margin-bottom: 15px;
+            }
+
+            .message {
+                padding: 10px;
+                margin: 10px 0;
+                font-size: 0.9em;
+                letter-spacing: 1px;
+            }
+
+            .feedback-card {
+                padding: 12px;
+                margin: 10px 0;
+                border: 2px solid #FF00FF;
+            }
+
+            .feedback-card h4 {
+                font-size: 0.95em;
+                margin-bottom: 8px;
+            }
+
+            .rating-display {
+                font-size: 1.2em;
+            }
+
+            .stars {
+                font-size: 1.3em;
+                margin: 8px 0;
+            }
+
+            .star {
+                margin: 0 3px;
+            }
+
+            table {
+                font-size: 0.85em;
+                margin: 12px 0;
+            }
+
+            table th, table td {
+                padding: 8px;
+                font-size: 0.8em;
+                border: 1px solid #00FFFF;
+                word-break: break-word;
+            }
+
+            .scroll-table {
+                max-height: 350px;
+            }
+
+            .chart {
+                padding: 12px;
+                margin: 15px 0;
+                border: 2px solid #FF00FF;
+            }
+
+            .chart h4 {
+                font-size: 0.95em;
+                margin-bottom: 10px;
+            }
+
+            .chart-bar {
+                margin: 8px 0;
+            }
+
+            .chart-label {
+                width: 60px;
+                font-size: 0.85em;
+            }
+
+            .chart-fill {
+                height: 25px;
+                border: 1px solid #00FF00;
+                margin: 0 5px;
+            }
+
+            .chart-value {
+                font-size: 0.9em;
+                margin-left: 5px;
+                min-width: 40px;
+            }
+
+            .action-btns {
+                flex-direction: column;
+                gap: 3px;
+            }
+
+            .edit-btn, .delete-btn, .view-btn {
+                padding: 6px 8px;
+                font-size: 0.75em;
+                width: 100%;
+            }
+        }
+
+        /* Extra Small Phones (360px and below) */
+        @media (max-width: 360px) {
+            .container {
+                padding: 12px;
+                border: 2px solid #00FFFF;
+            }
+
+            h1 {
+                font-size: 1.4em;
+                letter-spacing: 0.5px;
+            }
+
+            h2 {
+                font-size: 1.1em;
+                letter-spacing: 0.5px;
+            }
+
+            .welcome-box h1 {
+                font-size: 1.4em;
+                margin: 10px 0;
+            }
+
+            .welcome-box p {
+                font-size: 0.9em;
+                margin: 6px 0;
+            }
+
+            input, textarea, select {
+                padding: 8px;
+                font-size: 16px;
+                margin: 6px 0;
+            }
+
+            .btn {
+                padding: 10px 12px;
+                font-size: 0.9em;
+                letter-spacing: 0.5px;
+                margin: 4px 2px;
+            }
+
+            .room-code-display {
+                font-size: 1.4em;
+                letter-spacing: 2px;
+            }
+
+            .stat-value {
+                font-size: 1.3em;
+            }
+
+            .stars {
+                font-size: 1.2em;
+            }
+
+            table th, table td {
+                padding: 6px;
+                font-size: 0.75em;
+            }
+        }
+
+        /* Large Desktops (1200px and above) */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1100px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .button-group {
+                gap: 15px;
+            }
+        }
+
+        /* Landscape Orientation (Small Height) */
+        @media (orientation: landscape) and (max-height: 600px) {
+            .container {
+                min-height: auto;
+                max-height: 90vh;
+                overflow-y: auto;
+                padding: 20px;
+            }
+
+            .welcome-box {
+                margin: 10px 0;
+            }
+
+            .welcome-box h1 {
+                font-size: 1.5em;
+                margin: 8px 0;
+            }
+
+            .welcome-box p {
+                font-size: 0.9em;
+                margin: 4px 0;
+            }
+
+            h2 {
+                font-size: 1.3em;
+                margin-bottom: 8px;
+            }
+
+            .form-group {
+                margin: 8px 0;
+            }
+
+            .form-group label {
+                margin-bottom: 4px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            textarea {
+                max-height: 120px;
+            }
+
+            .scroll-table {
+                max-height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Page -->
+        <div id="loginPage" class="page active">
+            <div class="welcome-box">
+                <h1>⚡ RETROFEEDBACK ⚡</h1>
+                <p>Event Feedback System</p>
+                <p style="font-size: 0.9em; margin-top: 10px;">Type your username to continue</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="userLogin">🔐 USERNAME:</label>
+                    <input 
+                        type="text" 
+                        id="userLogin" 
+                        placeholder="Enter your awesome username..." 
+                        required
+                        minlength="3"
+                    >
+                </div>
+
+                <div class="button-group center">
+                    <button type="submit" class="btn">→ ENTER →</button>
+                </div>
+            </form>
+
+            <div style="margin-top: 30px; text-align: center; font-size: 0.9em; color: #00FFFF;">
+                <p>💡 Tip: Use any username to get started!</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page">
+            <div class="user-info">
+                <span class="username">👤 Logged in as: <span id="displayUsername"></span></span>
+                <button class="btn logout-btn btn-small" onclick="handleLogout()">LOGOUT</button>
+            </div>
+
+            <div class="welcome-box">
+                <h2>🎉 Welcome Back! 🎉</h2>
+                <p>Select an option to get started</p>
+            </div>
+
+            <div class="button-group center column">
+                <button class="btn" onclick="goToPage('createRoomPage')" style="background: linear-gradient(45deg, #00FF00, #00FFFF); width: 100%; padding: 20px;">
+                    ✨ CREATE NEW ROOM ✨
+                </button>
+                <button class="btn btn-secondary" onclick="goToPage('joinRoomPage')" style="background: linear-gradient(45deg, #FF00FF, #FFFF00); width: 100%; padding: 20px;">
+                    🚪 JOIN EXISTING ROOM 🚪
+                </button>
+                <button class="btn btn-secondary" onclick="goToPage('myRoomsPage')" style="width: 100%; padding: 20px;">
+                    📊 MY ROOMS & HISTORY 📊
+                </button>
+            </div>
+        </div>
+
+        <!-- Create Room Page -->
+        <div id="createRoomPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('dashboardPage')">← BACK</button>
+
+            <div class="welcome-box">
+                <h2>✨ CREATE NEW ROOM ✨</h2>
+                <p>Set up a new event room for feedback</p>
+            </div>
+
+            <form id="createRoomForm" onsubmit="handleCreateRoom(event)">
+                <div class="form-group">
+                    <label for="eventName">🎯 EVENT NAME:</label>
+                    <input 
+                        type="text" 
+                        id="eventName" 
+                        placeholder="e.g., Annual Conference 2026" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription">📝 EVENT DESCRIPTION:</label>
+                    <textarea 
+                        id="eventDescription" 
+                        placeholder="Tell us about your event..." 
+                        rows="4"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDate">📅 EVENT DATE:</label>
+                    <input 
+                        type="date" 
+                        id="eventDate" 
+                        required
+                    >
+                </div>
+
+                <div class="button-group center">
+                    <button type="submit" class="btn">🚀 CREATE ROOM 🚀</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Room Created Page -->
+        <div id="roomCreatedPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('dashboardPage')">← BACK TO DASHBOARD</button>
+
+            <div class="welcome-box">
+                <h2>🎊 ROOM CREATED! 🎊</h2>
+                <p>Share this code with your participants</p>
+            </div>
+
+            <div class="room-code">
+                <h3>🔑 YOUR ROOM CODE:</h3>
+                <div class="room-code-display" id="roomCodeDisplay"></div>
+                <button class="copy-btn" onclick="copyRoomCode()">📋 COPY CODE</button>
+                <p style="margin-top: 10px; color: #00FFFF; font-size: 0.9em;">Share this code with participants!</p>
+            </div>
+
+            <div class="form-group" style="background: #1a1a1a; padding: 15px; border: 2px solid #00FFFF; border-radius: 5px;">
+                <h4 style="color: #FFFF00; margin-bottom: 10px;">📋 ROOM DETAILS:</h4>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Event:</strong> <span id="createdEventName"></span></p>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Organizer:</strong> <span id="createdOrganizerName"></span></p>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Created:</strong> <span id="createdRoomTime"></span></p>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Status:</strong> <span style="color: #00FF00;">● ACTIVE</span></p>
+            </div>
+
+            <div class="button-group center">
+                <button class="btn" onclick="startWaitingForFeedback()">⏳ WAIT FOR FEEDBACK</button>
+                <button class="btn btn-secondary" onclick="goToPage('dashboardPage')">← SKIP FOR NOW</button>
+            </div>
+        </div>
+
+        <!-- Waiting for Feedback Page -->
+        <div id="waitingPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('dashboardPage')">← BACK TO DASHBOARD</button>
+
+            <div class="welcome-box">
+                <h2>⏳ WAITING FOR FEEDBACK ⏳</h2>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="animation: pulse 1s infinite;">
+                    <div style="font-size: 3em; margin: 20px 0;">⏳</div>
+                </div>
+            </div>
+
+            <div style="background: #1a1a1a; border: 2px solid #00FFFF; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                <h4 style="color: #FFFF00; margin-bottom: 10px;">📊 LIVE FEEDBACK COUNT:</h4>
+                <div style="font-size: 2em; color: #00FF00; text-shadow: 0 0 10px #00FF00; text-align: center;">
+                    <span id="feedbackCount">0</span> / <span id="totalParticipants">--</span>
+                </div>
+            </div>
+
+            <div style="background: #1a1a1a; border: 2px solid #FF00FF; padding: 20px; border-radius: 5px;">
+                <h4 style="color: #00FFFF; margin-bottom: 15px;">📝 RECENT FEEDBACK:</h4>
+                <div id="liveRecentFeedback" style="max-height: 300px; overflow-y: auto;">
+                    <p style="color: #00FFFF; text-align: center;">Waiting for feedback...</p>
+                </div>
+            </div>
+
+            <div class="button-group center">
+                <button class="btn" onclick="goToPage('dashboardPage')">← BACK</button>
+            </div>
+        </div>
+
+        <!-- Join Room Page -->
+        <div id="joinRoomPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('dashboardPage')">← BACK</button>
+
+            <div class="welcome-box">
+                <h2>🚪 JOIN A ROOM 🚪</h2>
+                <p>Enter the room code to join the feedback session</p>
+            </div>
+
+            <form id="joinRoomForm" onsubmit="handleJoinRoom(event)">
+                <div class="form-group">
+                    <label for="roomCode">🔑 ROOM CODE:</label>
+                    <input 
+                        type="text" 
+                        id="roomCode" 
+                        placeholder="Enter the 6-digit room code..." 
+                        required
+                        maxlength="6"
+                        style="text-transform: uppercase;"
+                    >
+                </div>
+
+                <div class="button-group center">
+                    <button type="submit" class="btn">✅ JOIN ROOM ✅</button>
+                </div>
+            </form>
+
+            <div id="joinMessage"></div>
+        </div>
+
+        <!-- Feedback Page -->
+        <div id="feedbackPage" class="page">
+            <div style="background: #1a1a1a; border: 2px solid #00FFFF; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h4 style="color: #FFFF00;">📍 FEEDBACK FOR:</h4>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Event:</strong> <span id="feedbackEventName"></span></p>
+                <p style="color: #00FFFF; margin: 8px 0;"><strong>Organizer:</strong> <span id="feedbackOrganizerName"></span></p>
+            </div>
+
+            <form id="feedbackForm" onsubmit="handleSubmitFeedback(event)">
+                <div class="form-group">
+                    <label for="feedbackRating">⭐ RATE YOUR EXPERIENCE (1-5 STARS):</label>
+                    <div class="stars" id="starsContainer"></div>
+                    <input type="hidden" id="feedbackRating" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="feedbackComment">💬 YOUR FEEDBACK & IMPROVEMENTS:</label>
+                    <textarea 
+                        id="feedbackComment" 
+                        placeholder="What did you like? What can be improved? Share your thoughts..." 
+                        rows="6"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="feedbackCategory">📂 FEEDBACK CATEGORY:</label>
+                    <select id="feedbackCategory" required>
+                        <option value="">-- Select Category --</option>
+                        <option value="venue">Venue & Logistics</option>
+                        <option value="content">Content & Speakers</option>
+                        <option value="organization">Organization & Schedule</option>
+                        <option value="experience">Overall Experience</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="button-group center">
+                    <button type="submit" class="btn">✅ SUBMIT FEEDBACK ✅</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Feedback Submitted Page -->
+        <div id="feedbackSubmittedPage" class="page">
+            <div class="welcome-box">
+                <h2>🎉 THANK YOU! 🎉</h2>
+                <p>Your feedback has been recorded</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0; font-size: 3em;">✅</div>
+
+            <div style="background: #1a1a1a; border: 3px solid #00FF00; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+                <h3 style="color: #FFFF00;">🎊 SUBMISSION SUCCESSFUL 🎊</h3>
+                <p style="color: #00FFFF; margin-top: 10px;">Your feedback helps improve future events!</p>
+            </div>
+
+            <div class="button-group center">
+                <button class="btn" onclick="goToPage('dashboardPage')">← BACK TO DASHBOARD</button>
+            </div>
+        </div>
+
+        <!-- My Rooms Page -->
+        <div id="myRoomsPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('dashboardPage')">← BACK</button>
+
+            <div class="welcome-box">
+                <h2>📊 MY ROOMS & HISTORY 📊</h2>
+                <p>View and manage your feedback rooms</p>
+            </div>
+
+            <div id="myRoomsContainer" style="margin-top: 30px;">
+                <!-- Rooms will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Room Analytics Page -->
+        <div id="roomAnalyticsPage" class="page">
+            <button class="btn back-btn" onclick="goToPage('myRoomsPage')">← BACK TO ROOMS</button>
+
+            <div class="welcome-box">
+                <h2>📊 ROOM ANALYTICS 📊</h2>
+                <p id="analyticsEventName"></p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <h4>Total Feedback</h4>
+                    <div class="stat-value" id="analyticsTotalFeedback">0</div>
+                    <div class="stat-label">responses received</div>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Average Rating</h4>
+                    <div class="stat-value" id="analyticsAvgRating">0.0</div>
+                    <div class="stat-label">out of 5 stars</div>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Highest Rating</h4>
+                    <div class="stat-value" id="analyticsHighestRating">0</div>
+                    <div class="stat-label">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <div class="stat-card">
+                    <h4>Lowest Rating</h4>
+                    <div class="stat-value" id="analyticsLowestRating">0</div>
+                    <div class="stat-label">⭐</div>
+                </div>
+            </div>
+
+            <div class="chart">
+                <h4>📈 RATING DISTRIBUTION:</h4>
+                <div id="ratingDistribution"></div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: #FFFF00; text-shadow: 0 0 10px #FFFF00;">💬 ALL FEEDBACK RESPONSES:</h3>
+                <div class="scroll-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👤 User</th>
+                                <th>⭐ Rating</th>
+                                <th>📂 Category</th>
+                                <th>💬 Comment</th>
+                                <th>⏰ Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedbackTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #00FFFF;">Loading feedback...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="button-group center" style="margin-top: 30px;">
+                <button class="btn" onclick="exportRoomData()">📥 EXPORT DATA AS PDF</button>
+                <button class="btn btn-danger" onclick="deleteRoom()">🗑️ DELETE ROOM</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ STORAGE & DATA MANAGEMENT ============
+
+        const DB = {
+            users: JSON.parse(localStorage.getItem('retrofeedback_users')) || {},
+            rooms: JSON.parse(localStorage.getItem('retrofeedback_rooms')) || {},
+            feedback: JSON.parse(localStorage.getItem('retrofeedback_feedback')) || {}
+        };
+
+        let currentUser = localStorage.getItem('retrofeedback_currentUser') || null;
+        let currentRoom = null;
+
+        function saveDB() {
+            localStorage.setItem('retrofeedback_users', JSON.stringify(DB.users));
+            localStorage.setItem('retrofeedback_rooms', JSON.stringify(DB.rooms));
+            localStorage.setItem('retrofeedback_feedback', JSON.stringify(DB.feedback));
+        }
+
+        // ============ UTILITY FUNCTIONS ============
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function getCurrentTimestamp() {
+            const now = new Date();
+            return now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function goToPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function showMessage(message, type = 'info', elementId = null) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}`;
+            messageEl.textContent = message;
+
+            if (elementId) {
+                const target = document.getElementById(elementId);
+                target.innerHTML = '';
+                target.appendChild(messageEl);
+            } else {
+                document.querySelector('.container').insertBefore(messageEl, document.querySelector('.page.active'));
+            }
+
+            setTimeout(() => messageEl.remove(), 5000);
+        }
+
+        // ============ AUTHENTICATION ============
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('userLogin').value.trim();
+
+            if (username.length < 3) {
+                showMessage('Username must be at least 3 characters!', 'error');
+                return;
+            }
+
+            // Create user if doesn't exist
+            if (!DB.users[username]) {
+                DB.users[username] = {
+                    username: username,
+                    createdAt: getCurrentTimestamp(),
+                    roomsCreated: [],
+                    feedbackGiven: []
+                };
+            }
+
+            currentUser = username;
+            localStorage.setItem('retrofeedback_currentUser', currentUser);
+            saveDB();
+
+            showMessage(`Welcome back, ${username}!`, 'success');
+            setTimeout(() => {
+                document.getElementById('displayUsername').textContent = username;
+                goToPage('dashboardPage');
+            }, 500);
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            currentRoom = null;
+            localStorage.removeItem('retrofeedback_currentUser');
+            document.getElementById('loginForm').reset();
+            document.getElementById('userLogin').focus();
+            goToPage('loginPage');
+            showMessage('Logged out successfully!', 'success');
+        }
+
+        // ============ ROOM MANAGEMENT ============
+
+        function handleCreateRoom(e) {
+            e.preventDefault();
+            const eventName = document.getElementById('eventName').value.trim();
+            const eventDescription = document.getElementById('eventDescription').value.trim();
+            const eventDate = document.getElementById('eventDate').value;
+
+            if (!eventName) {
+                showMessage('Event name is required!', 'error');
+                return;
+            }
+
+            const roomCode = generateRoomCode();
+            const now = getCurrentTimestamp();
+
+            DB.rooms[roomCode] = {
+                roomCode: roomCode,
+                eventName: eventName,
+                eventDescription: eventDescription,
+                eventDate: eventDate,
+                organizer: currentUser,
+                createdAt: now,
+                createdAtFull: new Date(eventDate).toLocaleDateString(),
+                status: 'active'
+            };
+
+            // Add room to user's created rooms
+            if (!DB.users[currentUser].roomsCreated) {
+                DB.users[currentUser].roomsCreated = [];
+            }
+            DB.users[currentUser].roomsCreated.push(roomCode);
+
+            saveDB();
+
+            // Display room created page
+            document.getElementById('roomCodeDisplay').textContent = roomCode;
+            document.getElementById('createdEventName').textContent = eventName;
+            document.getElementById('createdOrganizerName').textContent = currentUser;
+            document.getElementById('createdRoomTime').textContent = now;
+
+            document.getElementById('createRoomForm').reset();
+            goToPage('roomCreatedPage');
+            showMessage('Room created successfully!', 'success');
+        }
+
+        function copyRoomCode() {
+            const code = document.getElementById('roomCodeDisplay').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showMessage('Room code copied to clipboard!', 'success');
+            });
+        }
+
+        function startWaitingForFeedback() {
+            const code = document.getElementById('roomCodeDisplay').textContent;
+            currentRoom = code;
+            goToPage('waitingPage');
+            updateLiveFeedback();
+            setInterval(updateLiveFeedback, 2000);
+        }
+
+        function updateLiveFeedback() {
+            if (!currentRoom) return;
+
+            const feedbacks = DB.feedback[currentRoom] || [];
+            document.getElementById('feedbackCount').textContent = feedbacks.length;
+
+            const recentContainer = document.getElementById('liveRecentFeedback');
+            
+            if (feedbacks.length === 0) {
+                recentContainer.innerHTML = '<p style="color: #00FFFF; text-align: center;">Waiting for feedback...</p>';
+                return;
+            }
+
+            const recent = feedbacks.slice(-5).reverse();
+            recentContainer.innerHTML = recent.map(fb => `
+                <div class="feedback-card" style="margin: 10px 0; padding: 12px;">
+                    <p style="color: #FFFF00;"><strong>${fb.user}</strong></p>
+                    <p style="color: #00FF00;">⭐ Rating: ${fb.rating}/5</p>
+                    <p style="color: #00FFFF; font-size: 0.9em; margin-top: 5px;">"${fb.comment.substring(0, 80)}${fb.comment.length > 80 ? '...' : ''}"</p>
+                </div>
+            `).join('');
+        }
+
+        function handleJoinRoom(e) {
+            e.preventDefault();
+            const roomCode = document.getElementById('roomCode').value.trim().toUpperCase();
+            const messageEl = document.getElementById('joinMessage');
+
+            if (!DB.rooms[roomCode]) {
+                showMessage('Room not found! Check the code and try again.', 'error', 'joinMessage');
+                return;
+            }
+
+            if (DB.rooms[roomCode].status !== 'active') {
+                showMessage('This room is no longer active.', 'error', 'joinMessage');
+                return;
+            }
+
+            currentRoom = roomCode;
+            document.getElementById('feedbackEventName').textContent = DB.rooms[roomCode].eventName;
+            document.getElementById('feedbackOrganizerName').textContent = DB.rooms[roomCode].organizer;
+            
+            initializeStarRating();
+            document.getElementById('feedbackForm').reset();
+            document.getElementById('feedbackRating').value = 0;
+            
+            goToPage('feedbackPage');
+            showMessage('Successfully joined the room!', 'success');
+        }
+
+        // ============ STAR RATING ============
+
+        function initializeStarRating() {
+            const container = document.getElementById('starsContainer');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.textContent = '★';
+                star.onclick = () => setRating(i);
+                star.onmouseover = () => highlightStars(i);
+                star.onmouseout = () => highlightStars(parseInt(document.getElementById('feedbackRating').value));
+                container.appendChild(star);
+            }
+
+            highlightStars(0);
+        }
+
+        function setRating(rating) {
+            document.getElementById('feedbackRating').value = rating;
+            highlightStars(rating);
+        }
+
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('#starsContainer .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // ============ FEEDBACK MANAGEMENT ============
+
+        function handleSubmitFeedback(e) {
+            e.preventDefault();
+
+            const rating = parseInt(document.getElementById('feedbackRating').value);
+            const comment = document.getElementById('feedbackComment').value.trim();
+            const category = document.getElementById('feedbackCategory').value;
+
+            if (rating === 0) {
+                showMessage('Please select a rating!', 'error');
+                return;
+            }
+
+            if (!comment) {
+                showMessage('Please provide feedback!', 'error');
+                return;
+            }
+
+            if (!currentRoom) {
+                showMessage('Error: Room not found!', 'error');
+                return;
+            }
+
+            // Initialize feedback array for room if not exists
+            if (!DB.feedback[currentRoom]) {
+                DB.feedback[currentRoom] = [];
+            }
+
+            // Save feedback
+            DB.feedback[currentRoom].push({
+                user: currentUser,
+                rating: rating,
+                comment: comment,
+                category: category,
+                timestamp: getCurrentTimestamp(),
+                date: new Date().toISOString()
+            });
+
+            // Add to user's feedback given
+            if (!DB.users[currentUser].feedbackGiven) {
+                DB.users[currentUser].feedbackGiven = [];
+            }
+            DB.users[currentUser].feedbackGiven.push({
+                room: currentRoom,
+                timestamp: getCurrentTimestamp()
+            });
+
+            saveDB();
+            showMessage('Feedback submitted successfully!', 'success');
+            
+            setTimeout(() => {
+                goToPage('feedbackSubmittedPage');
+            }, 500);
+        }
+
+        // ============ ANALYTICS & REPORTING ============
+
+        function displayMyRooms() {
+            const container = document.getElementById('myRoomsContainer');
+            const userEmail = currentUser;
+            
+            // Get rooms created by user
+            const createdRooms = Object.values(DB.rooms).filter(room => room.organizer === userEmail);
+            
+            // Get rooms user has given feedback in
+            const feedbackRooms = Object.keys(DB.feedback).filter(roomCode => {
+                const feedback = DB.feedback[roomCode];
+                return feedback.some(f => f.user === userEmail);
+            });
+
+            let html = `
+                <h3 style="color: #FFFF00; margin: 20px 0;">📍 ROOMS I CREATED:</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-bottom: 40px;">
+            `;
+
+            if (createdRooms.length === 0) {
+                html += '<div style="grid-column: 1/-1; text-align: center; color: #00FFFF; padding: 20px;">No rooms created yet.</div>';
+            } else {
+                createdRooms.forEach(room => {
+                    const feedbackCount = (DB.feedback[room.roomCode] || []).length;
+                    html += `
+                        <div class="feedback-card">
+                            <h4>${room.eventName}</h4>
+                            <p style="color: #00FFFF; font-size: 0.9em; margin: 8px 0;">
+                                <strong>Code:</strong> ${room.roomCode}
+                            </p>
+                            <p style="color: #00FFFF; font-size: 0.9em; margin: 8px 0;">
+                                <strong>Date:</strong> ${room.eventDate}
+                            </p>
+                            <p style="color: #00FF00; font-size: 0.9em; margin: 8px 0;">
+                                <strong>Feedback Received:</strong> ${feedbackCount}
+                            </p>
+                            <button class="btn btn-small" style="width: 100%; margin-top: 10px;" onclick="viewRoomAnalytics('${room.roomCode}')">
+                                📊 VIEW ANALYTICS
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+
+            html += `
+                <h3 style="color: #FFFF00; margin: 20px 0;">📍 ROOMS I GAVE FEEDBACK IN:</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+            `;
+
+            if (feedbackRooms.length === 0) {
+                html += '<div style="grid-column: 1/-1; text-align: center; color: #00FFFF; padding: 20px;">No feedback given yet.</div>';
+            } else {
+                feedbackRooms.forEach(roomCode => {
+                    const room = DB.rooms[roomCode];
+                    if (room) {
+                        const myFeedback = (DB.feedback[roomCode] || []).find(f => f.user === currentUser);
+                        html += `
+                            <div class="feedback-card">
+                                <h4>${room.eventName}</h4>
+                                <p style="color: #00FFFF; font-size: 0.9em; margin: 8px 0;">
+                                    <strong>Organizer:</strong> ${room.organizer}
+                                </p>
+                                <p style="color: #00FF00; font-size: 0.9em; margin: 8px 0;">
+                                    <strong>Your Rating:</strong> ${'⭐'.repeat(myFeedback.rating)}
+                                </p>
+                                <p style="color: #FFFF00; font-size: 0.9em; margin: 8px 0;">
+                                    <strong>Submitted:</strong> ${myFeedback.timestamp}
+                                </p>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            html += `</div>`;
+
+            container.innerHTML = html;
+        }
+
+        function viewRoomAnalytics(roomCode) {
+            currentRoom = roomCode;
+            const room = DB.rooms[roomCode];
+            const feedbacks = DB.feedback[roomCode] || [];
+
+            if (!room) {
+                showMessage('Room not found!', 'error');
+                return;
+            }
+
+            document.getElementById('analyticsEventName').textContent = room.eventName;
+            document.getElementById('analyticsTotalFeedback').textContent = feedbacks.length;
+
+            if (feedbacks.length === 0) {
+                document.getElementById('analyticsAvgRating').textContent = '0.0';
+                document.getElementById('analyticsHighestRating').textContent = '0';
+                document.getElementById('analyticsLowestRating').textContent = '0';
+                document.getElementById('ratingDistribution').innerHTML = '<p style="color: #00FFFF; text-align: center;">No feedback yet.</p>';
+                document.getElementById('feedbackTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #00FFFF;">No feedback submitted yet.</td></tr>';
+            } else {
+                // Calculate statistics
+                const ratings = feedbacks.map(f => f.rating);
+                const avgRating = (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
+                const highestRating = Math.max(...ratings);
+                const lowestRating = Math.min(...ratings);
+
+                document.getElementById('analyticsAvgRating').textContent = avgRating;
+                document.getElementById('analyticsHighestRating').textContent = highestRating;
+                document.getElementById('analyticsLowestRating').textContent = lowestRating;
+
+                // Rating distribution
+                const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                feedbacks.forEach(f => distribution[f.rating]++);
+
+                let distributionHTML = '';
+                for (let i = 5; i >= 1; i--) {
+                    const count = distribution[i];
+                    const maxCount = Math.max(...Object.values(distribution));
+                    const percentage = maxCount > 0 ? (count / maxCount * 100) : 0;
+
+                    distributionHTML += `
+                        <div class="chart-bar">
+                            <div class="chart-label">${i} ⭐</div>
+                            <div class="chart-fill" style="width: ${percentage}%"></div>
+                            <div class="chart-value">${count}</div>
+                        </div>
+                    `;
+                }
+                document.getElementById('ratingDistribution').innerHTML = distributionHTML;
+
+                // Feedback table
+                let tableHTML = feedbacks.map(fb => `
+                    <tr>
+                        <td>${fb.user}</td>
+                        <td style="color: #FFFF00;">${'⭐'.repeat(fb.rating)}</td>
+                        <td style="color: #00FFFF;">${fb.category}</td>
+                        <td>${fb.comment.substring(0, 50)}${fb.comment.length > 50 ? '...' : ''}</td>
+                        <td style="white-space: nowrap;">${fb.timestamp}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('feedbackTableBody').innerHTML = tableHTML;
+            }
+
+            goToPage('roomAnalyticsPage');
+        }
+
+        function exportRoomData() {
+            const room = DB.rooms[currentRoom];
+            const feedbacks = DB.feedback[currentRoom] || [];
+
+            if (!room) {
+                showMessage('Room not found!', 'error');
+                return;
+            }
+
+            // Calculate statistics
+            const totalFeedback = feedbacks.length;
+            const averageRating = totalFeedback > 0 ? (feedbacks.reduce((a, b) => a + b.rating, 0) / totalFeedback).toFixed(1) : 0;
+            const highestRating = totalFeedback > 0 ? Math.max(...feedbacks.map(f => f.rating)) : 0;
+            const lowestRating = totalFeedback > 0 ? Math.min(...feedbacks.map(f => f.rating)) : 0;
+
+            // Create HTML for PDF
+            const htmlContent = `
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #FF00FF; padding-bottom: 20px; }
+                    .header h1 { color: #FF00FF; margin: 0; font-size: 28px; }
+                    .header p { margin: 5px 0; color: #666; }
+                    .stats-section { margin: 30px 0; background: #f5f5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #00FFFF; }
+                    .stats-section h2 { color: #00FFFF; margin-top: 0; font-size: 18px; }
+                    .stat-row { display: inline-block; width: 48%; margin: 10px 1%; padding: 10px; background: white; border-radius: 5px; }
+                    .stat-label { font-weight: bold; color: #666; }
+                    .stat-value { color: #FF00FF; font-size: 20px; font-weight: bold; }
+                    .feedback-section { margin: 30px 0; }
+                    .feedback-section h2 { color: #00FFFF; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #FFFF00; padding-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    table th { background: #00FFFF; color: white; padding: 12px; text-align: left; font-weight: bold; }
+                    table td { padding: 12px; border-bottom: 1px solid #ddd; }
+                    table tr:nth-child(even) { background: #f9f9f9; }
+                    table tr:hover { background: #f0f0f0; }
+                    .rating { text-align: center; color: #FFFF00; font-weight: bold; }
+                    .footer { margin-top: 40px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px; }
+                </style>
+
+                <div class="header">
+                    <h1>🎉 EVENT FEEDBACK REPORT 🎉</h1>
+                    <p><strong>Event:</strong> ${room.eventName}</p>
+                    <p><strong>Organizer:</strong> ${room.organizer}</p>
+                    <p><strong>Date:</strong> ${room.eventDate}</p>
+                    <p><strong>Room Code:</strong> ${room.roomCode}</p>
+                </div>
+
+                <div class="stats-section">
+                    <h2>📊 FEEDBACK STATISTICS</h2>
+                    <div class="stat-row">
+                        <div class="stat-label">Total Feedback Responses:</div>
+                        <div class="stat-value">${totalFeedback}</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Average Rating:</div>
+                        <div class="stat-value">${averageRating} ⭐</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Highest Rating:</div>
+                        <div class="stat-value">${highestRating} ${generateStars(highestRating)}</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Lowest Rating:</div>
+                        <div class="stat-value">${lowestRating} ${generateStars(lowestRating)}</div>
+                    </div>
+                </div>
+
+                ${feedbacks.length > 0 ? `
+                <div class="feedback-section">
+                    <h2>💬 DETAILED FEEDBACK RESPONSES</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>👤 User Name</th>
+                                <th>⭐ Rating</th>
+                                <th>📂 Category</th>
+                                <th>💬 Feedback Comment</th>
+                                <th>⏰ Submitted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${feedbacks.map((fb, index) => `
+                                <tr>
+                                    <td>${fb.user}</td>
+                                    <td class="rating">${fb.rating}/5 ${generateStars(fb.rating)}</td>
+                                    <td>${fb.category}</td>
+                                    <td>${fb.comment}</td>
+                                    <td>${fb.timestamp}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : `
+                <div class="feedback-section">
+                    <p style="text-align: center; color: #999; padding: 40px 0;">No feedback responses yet.</p>
+                </div>
+                `}
+
+                <div class="footer">
+                    <p>📋 Report Generated: ${getCurrentTimestamp()}</p>
+                    <p>🎯 RetroFeedback Event Management System © 2026</p>
+                </div>
+            `;
+
+            // Create PDF
+            const element = document.createElement('div');
+            element.innerHTML = htmlContent;
+
+            const opt = {
+                margin: 10,
+                filename: `feedback_${room.roomCode}_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+            
+            showMessage('📥 PDF Report exported successfully!', 'success');
+        }
+
+        function generateStars(rating) {
+            return '⭐'.repeat(rating);
+        }
+
+        function deleteRoom() {
+            if (confirm('⚠️ Are you sure you want to delete this room? This action cannot be undone!')) {
+                delete DB.rooms[currentRoom];
+                delete DB.feedback[currentRoom];
+                
+                if (DB.users[currentUser].roomsCreated) {
+                    DB.users[currentUser].roomsCreated = DB.users[currentUser].roomsCreated.filter(code => code !== currentRoom);
+                }
+                
+                saveDB();
+                showMessage('Room deleted successfully!', 'success');
+                setTimeout(() => {
+                    currentRoom = null;
+                    displayMyRooms();
+                    goToPage('myRoomsPage');
+                }, 500);
+            }
+        }
+
+        // ============ INITIALIZATION ============
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentUser) {
+                document.getElementById('displayUsername').textContent = currentUser;
+                goToPage('dashboardPage');
+            } else {
+                goToPage('loginPage');
+            }
+
+            // Add event listener to My Rooms page
+            const myRoomsPage = document.getElementById('myRoomsPage');
+            const observeTarget = myRoomsPage.querySelector('.page');
+            
+            // Display rooms when navigating to that page
+            window.goToPageOriginal = goToPage;
+            window.goToPage = function(pageName) {
+                window.goToPageOriginal(pageName);
+                if (pageName === 'myRoomsPage') {
+                    setTimeout(() => displayMyRooms(), 100);
+                }
+            };
+        });
+
+        // Restore original function for initialization
+        goToPage = function(pageName) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            window.scrollTo(0, 0);
+            
+            if (pageName === 'myRoomsPage') {
+                setTimeout(() => displayMyRooms(), 100);
+            }
+        };
+
+        // Check if user is logged in on page load
+        window.addEventListener('load', () => {
+            if (currentUser) {
+                document.getElementById('displayUsername').textContent = currentUser;
+                if (!document.querySelector('.page.active').id.includes('Page')) {
+                    goToPage('dashboardPage');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
