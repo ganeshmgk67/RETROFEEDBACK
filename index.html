@@ -1864,28 +1864,109 @@
             const lowestRating = totalFeedback > 0 ? Math.min(...feedbacks.map(f => f.rating)) : 0;
 
             // Create HTML for PDF
-            const htmlContent = `
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
-                    .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #FF00FF; padding-bottom: 20px; }
-                    .header h1 { color: #FF00FF; margin: 0; font-size: 28px; }
-                    .header p { margin: 5px 0; color: #666; }
-                    .stats-section { margin: 30px 0; background: #f5f5f5; padding: 20px; border-radius: 8px; border-left: 4px solid #00FFFF; }
-                    .stats-section h2 { color: #00FFFF; margin-top: 0; font-size: 18px; }
-                    .stat-row { display: inline-block; width: 48%; margin: 10px 1%; padding: 10px; background: white; border-radius: 5px; }
-                    .stat-label { font-weight: bold; color: #666; }
-                    .stat-value { color: #FF00FF; font-size: 20px; font-weight: bold; }
-                    .feedback-section { margin: 30px 0; }
-                    .feedback-section h2 { color: #00FFFF; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #FFFF00; padding-bottom: 10px; }
-                    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                    table th { background: #00FFFF; color: white; padding: 12px; text-align: left; font-weight: bold; }
-                    table td { padding: 12px; border-bottom: 1px solid #ddd; }
-                    table tr:nth-child(even) { background: #f9f9f9; }
-                    table tr:hover { background: #f0f0f0; }
-                    .rating { text-align: center; color: #FFFF00; font-weight: bold; }
-                    .footer { margin-top: 40px; text-align: center; color: #999; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px; }
-                </style>
+            const htmlContent = `              
+            <style>
+            body{
+            font-family:Arial,sans-serif;
+            margin:20px;
+            color:#000;
+            background:#fff;
+            }
 
+            .header{
+            text-align:center;
+            margin-bottom:25px;
+            border-bottom:2px solid #333;
+            padding-bottom:15px;
+            }
+
+            .header h1{
+            color:#000;
+            font-size:26px;
+            margin:0;
+            }
+
+            .header p{
+            margin:4px 0;
+            font-size:14px;
+            }
+
+            .stats-section{
+            margin:25px 0;
+            background:#f2f2f2;
+            padding:20px;
+            border-radius:6px;
+            }
+
+            .stats-section h2{
+            margin-top:0;
+            color:#000;
+            }
+
+            .stat-row{
+            display:block;
+            margin:10px 0;
+            padding:10px;
+            background:#fff;
+            border:1px solid #ddd;
+            }
+
+            .stat-label{
+            font-weight:bold;
+            color:#333;
+            }
+
+            .stat-value{
+            font-size:20px;
+            color:#000;
+            font-weight:bold;
+            }
+
+            .feedback-section{
+            margin-top:30px;
+            }
+
+            .feedback-section h2{
+            color:#000;
+            margin-bottom:10px;
+            }
+
+            table{
+            width:100%;
+            border-collapse:collapse;
+            }
+
+            table th{
+            background:#333;
+            color:#fff;
+            padding:10px;
+            border:1px solid #ddd;
+            }
+
+            table td{
+            padding:10px;
+            border:1px solid #ddd;
+            color:#000;
+            background:#fff;
+            }
+
+            table tr:nth-child(even){
+            background:#f6f6f6;
+            }
+
+            .rating{
+            font-weight:bold;
+            color:#000;
+            text-align:center;
+            }
+
+            .footer{
+            margin-top:40px;
+            text-align:center;
+            font-size:12px;
+            color:#666;
+            }
+            </style>
                 <div class="header">
                     <h1>🎉 EVENT FEEDBACK REPORT 🎉</h1>
                     <p><strong>Event:</strong> ${room.eventName}</p>
@@ -1955,13 +2036,16 @@
             // Create PDF
             const element = document.createElement('div');
             element.innerHTML = htmlContent;
+            element.style.backgroundColor = 'white';
+            element.style.color = '#333';
+            element.style.width = '210mm';
 
             const opt = {
-                margin: 10,
+                margin: [8, 8, 8, 8],
                 filename: `feedback_${room.roomCode}_${Date.now()}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+                image: { type: 'png', quality: 1 },
+                html2canvas: { scale: 4, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4', compress: false }
             };
 
             html2pdf().set(opt).from(element).save();
